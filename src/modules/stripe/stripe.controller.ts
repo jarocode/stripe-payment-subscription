@@ -5,12 +5,15 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  Req,
+  Res,
   UseGuards,
 } from "@nestjs/common";
 import { StripeService } from "./stripe.service";
 import { CreateSubscriptionDto } from "../dto/create-subscription-dto";
 import { AuthorizationGuard } from "../../guards/authorization.guard";
 import { CreateCheckoutSessionDto } from "../dto/create-checkout-session-dto";
+import { Request, Response } from "express";
 
 @Controller("payments/stripe")
 export class StripeController {
@@ -47,7 +50,9 @@ export class StripeController {
   ) {
     const { lookup_key } = createCheckoutSessionDto;
     try {
-      const sessionUrl = this.stripeService.createCheckoutSession(lookup_key);
+      const sessionUrl =
+        await this.stripeService.createCheckoutSession(lookup_key);
+
       return {
         sessionUrl,
       };
@@ -57,5 +62,15 @@ export class StripeController {
         HttpStatus.BAD_REQUEST
       );
     }
+  }
+
+  @Post("/webhook")
+  async webhookForStripeEvents(
+    @Req() request: Request,
+    @Res() response: Response
+  ) {
+    await this.stripeService.listenToStripeEvents(request, response);
+    // Return a 200 response to acknowledge receipt of the event
+    response.send();
   }
 }
