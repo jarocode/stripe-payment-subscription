@@ -36,6 +36,9 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# aws
+.aws-sam
+
 # dotenv environment variable files
 .env
 .env.development.local
@@ -44,6 +47,7 @@ lerna-debug.log*
 .env.production.local
 .env.production
 .env.local
+.env.build
 
 #docker
 docker-compose.yaml
