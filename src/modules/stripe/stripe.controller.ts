@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  RawBody,
   Req,
   Res,
   UseGuards,
@@ -14,10 +15,14 @@ import { CreateSubscriptionDto } from "../dto/create-subscription-dto";
 import { AuthorizationGuard } from "../../guards/authorization.guard";
 import { CreateCheckoutSessionDto } from "../dto/create-checkout-session-dto";
 import { Request, Response } from "express";
+import { ConfigService } from "@nestjs/config";
 
 @Controller("payments/stripe")
 export class StripeController {
-  constructor(private stripeService: StripeService) {}
+  constructor(
+    private stripeService: StripeService,
+    private readonly configService: ConfigService
+  ) {}
 
   @Post("create-subscription")
   @UseGuards(AuthorizationGuard)
@@ -66,11 +71,24 @@ export class StripeController {
 
   @Post("/webhook")
   async webhookForStripeEvents(
-    @Req() request: Request,
-    @Res() response: Response
+    @RawBody() body: Buffer,
+    @Req() req: Request,
+    @Res() res: Response
   ) {
-    await this.stripeService.listenToStripeEvents(request, response);
-    // Return a 200 response to acknowledge receipt of the event
-    response.send();
+    const signature = req.headers["stripe-signature"];
+    const endpointSecret = await this.configService.getOrThrow(
+      "WEBHOOK_SIGNING_SECRET"
+    );
+
+    const processed = await this.stripeService.listenToStripeEvents(
+      body,
+      signature,
+      endpointSecret
+    );
+    if (processed) {
+      res.send();
+    } else {
+      res.sendStatus(400);
+    }
   }
 }

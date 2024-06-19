@@ -6,7 +6,10 @@ import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.int
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const PORT = new ConfigService().getOrThrow<number>("PORT");
-  const allowedOrigins: string[] = ["http://localhost:3000"]; // Adjust as needed
+  const allowedOrigins: string[] = [
+    "http://localhost:3000",
+    "https://stripe-payments-nextjs.vercel.app",
+  ]; // Adjust as needed
   const corsOptions: CorsOptions = {
     origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
