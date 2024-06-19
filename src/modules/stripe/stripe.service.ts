@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { Request, Response } from "express";
 import { ParamsDictionary } from "express-serve-static-core";
 import { ParsedQs } from "qs";
@@ -8,7 +9,10 @@ import Stripe from "stripe";
 export class StripeService {
   private stripe: Stripe;
 
-  constructor(@Inject("STRIPE_API_KEY") private readonly apiKey: string) {
+  constructor(
+    @Inject("STRIPE_API_KEY") private readonly apiKey: string,
+    private readonly configService: ConfigService
+  ) {
     this.stripe = new Stripe(this.apiKey, {
       apiVersion: "2024-04-10",
     });
@@ -67,11 +71,10 @@ export class StripeService {
     response: Response<any, Record<string, any>>
   ) {
     let event = request.body;
-    // Replace this endpoint secret with your endpoint's unique secret
-    // If you are testing with the CLI, find the secret by running 'stripe listen'
-    // If you are using an endpoint defined with the API or dashboard, look in your webhook settings
-    // at https://dashboard.stripe.com/webhooks
-    const endpointSecret = "whsec_12345";
+
+    const endpointSecret = this.configService.getOrThrow(
+      "WEBHOOK_SIGNING_SECRET"
+    );
     // Only verify the event if you have an endpoint secret defined.
     // Otherwise use the basic event deserialized with JSON.parse
     if (endpointSecret) {
