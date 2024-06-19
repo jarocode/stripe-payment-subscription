@@ -4,7 +4,8 @@ import { AppModule } from "./app.module";
 import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
+
   const PORT = new ConfigService().getOrThrow<number>("PORT");
   const allowedOrigins: string[] = [
     "http://localhost:3000",

@@ -1,8 +1,5 @@
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Request, Response } from "express";
-import { ParamsDictionary } from "express-serve-static-core";
-import { ParsedQs } from "qs";
 import Stripe from "stripe";
 
 @Injectable()
@@ -75,8 +72,9 @@ export class StripeService {
     // Otherwise use the basic event deserialized with JSON.parse
     if (endpointSecret) {
       try {
+        console.log("body:", body);
         const event = this.stripe.webhooks.constructEvent(
-          body,
+          JSON.stringify(body),
           signature,
           endpointSecret
         );
