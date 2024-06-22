@@ -3,7 +3,7 @@ import { HydratedDocument } from "mongoose";
 
 export type SubscriptionDocument = HydratedDocument<Subscription>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Subscription {
   @Prop({ isRequired: true })
   subscription_id: string;
@@ -16,9 +16,6 @@ export class Subscription {
 
   @Prop({ isRequired: true })
   amount: number;
-
-  @Prop({ isRequired: false })
-  user_id: string;
 }
 
 export const SubscriptionSchema = SchemaFactory.createForClass(Subscription);

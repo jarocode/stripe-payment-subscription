@@ -18,23 +18,23 @@ export class StripeService {
     });
   }
 
-  async createSubscription(userId: string, priceId: string): Promise<any> {
-    try {
-      const subscription = await this.stripe.subscriptions.create({
-        customer: userId,
-        items: [{ price: priceId }],
-        payment_behavior: "default_incomplete",
-        expand: ["latest_invoice.payment_intent"],
-      });
-      console.log(`Subscription created for customer: ${userId}`);
-      return subscription;
-    } catch (error) {
-      console.error("Error creating subscription:", error);
-      throw error; // Re-throw for controller handling
-    }
-  }
+  // async createSubscription(userId: string, priceId: string): Promise<any> {
+  //   try {
+  //     const subscription = await this.stripe.subscriptions.create({
+  //       customer: userId,
+  //       items: [{ price: priceId }],
+  //       payment_behavior: "default_incomplete",
+  //       expand: ["latest_invoice.payment_intent"],
+  //     });
+  //     console.log(`Subscription created for customer: ${userId}`);
+  //     return subscription;
+  //   } catch (error) {
+  //     console.error("Error creating subscription:", error);
+  //     throw error; // Re-throw for controller handling
+  //   }
+  // }
 
-  async createCheckoutSession(lookup_key: string): Promise<any> {
+  async createSubscriptionCheckout(lookup_key: string): Promise<any> {
     try {
       const prices = await this.stripe.prices.list({
         lookup_keys: [lookup_key],
@@ -45,6 +45,7 @@ export class StripeService {
 
       const session = await this.stripe.checkout.sessions.create({
         billing_address_collection: "auto",
+        customer: "cus_QLAusbOPLnIVoF",
         line_items: [
           {
             price: prices.data[0].id,
@@ -62,6 +63,31 @@ export class StripeService {
       return session.url;
     } catch (error) {
       console.error("Error creating stripe session:", error);
+      throw error; // Re-throw for controller handling
+    }
+  }
+
+  async updateSubscription(lookup_key: string): Promise<any> {
+    try {
+      const prices = await this.stripe.prices.list({
+        lookup_keys: [lookup_key],
+        expand: ["data.product"],
+      });
+      const subscriptionList = await this.stripe.subscriptions.list({
+        customer: "cus_QLAusbOPLnIVoF",
+      });
+      const subscription = subscriptionList.data[0];
+      const subscriptionItemId = subscription.items.data[0].id;
+      const updatedSubscription = await this.stripe.subscriptions.update(
+        subscription.id,
+        {
+          items: [{ id: subscriptionItemId, price: prices.data[0].id }],
+          proration_behavior: "always_invoice",
+        }
+      );
+      return updatedSubscription;
+    } catch (error) {
+      console.error("Error creating subscription:", error);
       throw error; // Re-throw for controller handling
     }
   }
@@ -124,9 +150,17 @@ export class StripeService {
 
             break;
           case "customer.subscription.updated":
-            subscription = event.data.object;
-            status = subscription.status;
-            // console.log(`Subscription status is ${status}.`);
+            const updatedSubscription = event.data.object;
+            const updatedStatus = updatedSubscription.status;
+            const { id, customer, plan: updatedPlan } = updatedSubscription;
+            const { product, amount: updatedAmount } = updatedPlan;
+            await this.subscriptionService.addSubscriptionToDB({
+              subscription_id: id,
+              customer_id: customer,
+              product_id: product,
+              amount: updatedAmount,
+            });
+            console.log(`Subscription status is ${updatedStatus}.`);
             break;
           default:
             // Unexpected event type

@@ -12,7 +12,11 @@ export class SubscriptionsService {
   ) {}
 
   async addSubscriptionToDB(subscriptionDto: any): Promise<Subscription> {
-    const createdSubscription = new this.subscriptionModel(subscriptionDto);
-    return createdSubscription.save();
+    try {
+      const createdSubscription = new this.subscriptionModel(subscriptionDto);
+      return createdSubscription.save();
+    } catch (error) {
+      throw error;
+    }
   }
 }
