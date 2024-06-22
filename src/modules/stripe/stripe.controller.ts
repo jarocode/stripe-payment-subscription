@@ -1,30 +1,28 @@
 import {
   Body,
   Controller,
-  Get,
   HttpException,
   HttpStatus,
   Post,
-  RawBody,
   Req,
   Res,
   UseGuards,
-} from '@nestjs/common';
-import { StripeService } from './stripe.service';
-import { CreateSubscriptionDto } from '../dto/create-subscription-dto';
-import { AuthorizationGuard } from '../../guards/authorization.guard';
-import { CreateCheckoutSessionDto } from '../dto/create-checkout-session-dto';
-import { Request, Response } from 'express';
-import { ConfigService } from '@nestjs/config';
+} from "@nestjs/common";
+import { StripeService } from "./stripe.service";
+import { CreateSubscriptionDto } from "../dto/create-subscription-dto";
+import { AuthorizationGuard } from "../../guards/authorization.guard";
+import { CreateCheckoutSessionDto } from "../dto/create-checkout-session-dto";
+import { Request, Response } from "express";
+import { ConfigService } from "@nestjs/config";
 
-@Controller('payments/stripe')
+@Controller("payments/stripe")
 export class StripeController {
   constructor(
     private stripeService: StripeService,
     private readonly configService: ConfigService
   ) {}
 
-  @Post('create-subscription')
+  @Post("create-subscription")
   @UseGuards(AuthorizationGuard)
   async createSubscription(
     @Body() createSubscriptionDto: CreateSubscriptionDto
@@ -48,7 +46,7 @@ export class StripeController {
     }
   }
 
-  @Post('create-checkout-session')
+  @Post("create-checkout-session")
   // @UseGuards(AuthorizationGuard)
   async createCheckoutSession(
     @Body() createCheckoutSessionDto: CreateCheckoutSessionDto
@@ -69,15 +67,15 @@ export class StripeController {
     }
   }
 
-  @Post('/webhook')
+  @Post("/webhook")
   async webhookForStripeEvents(
     @Body() body: any,
     @Req() req: Request,
     @Res() res: Response
   ) {
-    const signature = req.headers['stripe-signature'];
+    const signature = req.headers["stripe-signature"];
     const endpointSecret = await this.configService.getOrThrow(
-      'WEBHOOK_SIGNING_SECRET'
+      "WEBHOOK_SIGNING_SECRET"
     );
 
     const processed = await this.stripeService.listenToStripeEvents(

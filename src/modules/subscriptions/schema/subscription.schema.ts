@@ -6,9 +6,18 @@ export type SubscriptionDocument = HydratedDocument<Subscription>;
 @Schema()
 export class Subscription {
   @Prop({ isRequired: true })
-  id: string;
+  subscription_id: string;
 
   @Prop({ isRequired: true })
+  customer_id: string;
+
+  @Prop({ isRequired: true })
+  product_id: string;
+
+  @Prop({ isRequired: true })
+  amount: number;
+
+  @Prop({ isRequired: false })
   user_id: string;
 }
 
