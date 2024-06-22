@@ -3,6 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 
 import { Subscription } from "./schema/subscription.schema";
+import { SubscriptionDto } from "./dto/subscription.dto";
 
 @Injectable()
 export class SubscriptionsService {
@@ -11,10 +12,26 @@ export class SubscriptionsService {
     private subscriptionModel: Model<Subscription>
   ) {}
 
-  async addSubscriptionToDB(subscriptionDto: any): Promise<Subscription> {
+  async addSubscriptionToDB(
+    subscriptionDto: SubscriptionDto
+  ): Promise<Subscription> {
     try {
       const createdSubscription = new this.subscriptionModel(subscriptionDto);
       return createdSubscription.save();
+    } catch (error) {
+      throw error;
+    }
+  }
+  async updateSubscriptionInDB(
+    subscriptionDto: SubscriptionDto
+  ): Promise<void> {
+    try {
+      await this.subscriptionModel.findOneAndUpdate(
+        {
+          subscription_id: subscriptionDto.subscription_id,
+        },
+        subscriptionDto
+      );
     } catch (error) {
       throw error;
     }

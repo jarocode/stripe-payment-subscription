@@ -77,16 +77,12 @@ export class StripeController {
   ): Promise<{
     message: string;
     sessionUrl: string;
-    data: Stripe.Subscription;
   }> {
     const { lookup_key } = createCheckoutSessionDto;
-
     try {
-      const updatedSubscription =
-        await this.stripeService.updateSubscription(lookup_key);
+      await this.stripeService.updateSubscription(lookup_key);
       return {
         message: "subscription updated successfully",
-        data: updatedSubscription,
         sessionUrl: "/",
       };
     } catch (error) {
