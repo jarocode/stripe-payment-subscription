@@ -1,19 +1,22 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
-import { StripeModule } from './modules/stripe/stripe.module';
-
-import { RawBodyMiddleware } from './middleware/rawBody.middleware';
-import { StripeController } from './modules/stripe/stripe.controller';
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { MongooseModule } from "@nestjs/mongoose";
+import { SubscriptionsModule } from "./modules/subscriptions/subscriptions.module";
+import { StripeModule } from "./modules/stripe/stripe.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env', '.env.development', '.env.production'],
+      envFilePath: [".env", ".env.development", ".env.production"],
     }),
-    MongooseModule.forRoot(process.env.MONGODB_URI),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>("MONGODB_URI"),
+      }),
+      inject: [ConfigService],
+    }),
     SubscriptionsModule,
     StripeModule.forRootAsync(),
   ],
