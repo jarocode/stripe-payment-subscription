@@ -154,7 +154,7 @@ export class StripeService {
             const updatedStatus = updatedSubscription.status;
             const { id, customer, plan: updatedPlan } = updatedSubscription;
             const { product, amount: updatedAmount } = updatedPlan;
-            await this.subscriptionService.addSubscriptionToDB({
+            await this.subscriptionService.updateSubscriptionInDB({
               subscription_id: id,
               customer_id: customer,
               product_id: product,

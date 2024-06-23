@@ -30,7 +30,7 @@ export class SubscriptionsService {
         {
           subscription_id: subscriptionDto.subscription_id,
         },
-        subscriptionDto
+        { $set: subscriptionDto }
       );
     } catch (error) {
       throw error;
