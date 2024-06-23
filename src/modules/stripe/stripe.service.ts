@@ -18,23 +18,7 @@ export class StripeService {
     });
   }
 
-  // async createSubscription(userId: string, priceId: string): Promise<any> {
-  //   try {
-  //     const subscription = await this.stripe.subscriptions.create({
-  //       customer: userId,
-  //       items: [{ price: priceId }],
-  //       payment_behavior: "default_incomplete",
-  //       expand: ["latest_invoice.payment_intent"],
-  //     });
-  //     console.log(`Subscription created for customer: ${userId}`);
-  //     return subscription;
-  //   } catch (error) {
-  //     console.error("Error creating subscription:", error);
-  //     throw error; // Re-throw for controller handling
-  //   }
-  // }
-
-  async createSubscriptionCheckout(lookup_key: string): Promise<any> {
+  async createSubscriptionCheckout(lookup_key: string): Promise<string> {
     try {
       const prices = await this.stripe.prices.list({
         lookup_keys: [lookup_key],
@@ -67,7 +51,7 @@ export class StripeService {
     }
   }
 
-  async updateSubscription(lookup_key: string): Promise<any> {
+  async updateSubscription(lookup_key: string): Promise<Stripe.Subscription> {
     try {
       const prices = await this.stripe.prices.list({
         lookup_keys: [lookup_key],
@@ -87,7 +71,15 @@ export class StripeService {
       );
       return updatedSubscription;
     } catch (error) {
-      console.error("Error creating subscription:", error);
+      console.error("Error updating subscription:", error);
+      throw error; // Re-throw for controller handling
+    }
+  }
+  async cancelSubscription(subscription_id: string): Promise<void> {
+    try {
+      await this.stripe.subscriptions.cancel(subscription_id);
+    } catch (error) {
+      console.error("Error canceling subscription:", error);
       throw error; // Re-throw for controller handling
     }
   }
@@ -97,27 +89,14 @@ export class StripeService {
     // signature: string | string[],
     endpointSecret: string
   ) {
-    // Only verify the event if you have an endpoint secret defined.
-    // Otherwise use the basic event deserialized with JSON.parse
     if (endpointSecret) {
       try {
-        // const event = this.stripe.webhooks.constructEvent(
-        //   JSON.stringify(body),
-        //   signature,
-        //   endpointSecret
-        // );
         const event = body;
 
-        let subscription;
+        let subscription: any;
         let status: string;
         // Handle the event
         switch (event.type) {
-          case "customer.subscription.trial_will_end":
-            subscription = event.data.object;
-            status = subscription.status;
-            // console.log(`Subscription status is ${status}.`);
-
-            break;
           case "customer.subscription.deleted":
             subscription = event.data.object;
             status = subscription.status;
