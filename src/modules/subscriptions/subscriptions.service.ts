@@ -36,4 +36,16 @@ export class SubscriptionsService {
       throw error;
     }
   }
+  async getUserSubscription(customer_id: string): Promise<any> {
+    try {
+      const subscription = await this.subscriptionModel
+        .findOne({
+          customer_id,
+        })
+        .lean();
+      return subscription;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

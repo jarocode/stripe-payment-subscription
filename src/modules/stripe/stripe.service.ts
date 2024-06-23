@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import Stripe from "stripe";
 
 import { SubscriptionsService } from "../subscriptions/subscriptions.service";
+import { SubscriptionDto } from "../subscriptions/dto/subscription.dto";
 
 @Injectable()
 export class StripeService {
@@ -75,11 +76,32 @@ export class StripeService {
       throw error; // Re-throw for controller handling
     }
   }
+
   async cancelSubscription(subscription_id: string): Promise<void> {
     try {
       await this.stripe.subscriptions.cancel(subscription_id);
     } catch (error) {
       console.error("Error canceling subscription:", error);
+      throw error; // Re-throw for controller handling
+    }
+  }
+
+  async getUserSubscription(): Promise<SubscriptionDto> {
+    try {
+      let customer_id = "cus_QLAusbOPLnIVoF";
+
+      let subscription =
+        await this.subscriptionService.getUserSubscription(customer_id);
+
+      const { name } = await this.stripe.products.retrieve(
+        subscription.product_id
+      );
+
+      subscription.product_name = name;
+
+      return subscription;
+    } catch (error) {
+      console.error("Error geting user subscription:", error);
       throw error; // Re-throw for controller handling
     }
   }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Post,
@@ -16,6 +17,7 @@ import { CreateCheckoutSessionDto } from "./dto/create-checkout-session-dto";
 
 import { ConfigService } from "@nestjs/config";
 import { CancelSubscriptionDto } from "../subscriptions/dto/cancelSubscription.dto";
+import { SubscriptionDto } from "../subscriptions/dto/subscription.dto";
 
 @Controller("payments/stripe")
 export class StripeController {
@@ -51,14 +53,12 @@ export class StripeController {
     @Body() createCheckoutSessionDto: CreateCheckoutSessionDto
   ): Promise<{
     message: string;
-    sessionUrl: string;
   }> {
     const { lookup_key } = createCheckoutSessionDto;
     try {
       await this.stripeService.updateSubscription(lookup_key);
       return {
         message: "subscription updated successfully",
-        sessionUrl: "/",
       };
     } catch (error) {
       throw new HttpException(
@@ -82,6 +82,26 @@ export class StripeController {
       return {
         message: "subscription cancelled successfully",
         sessionUrl: "/",
+      };
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+  }
+  @Get("get-user-subscription")
+  // @UseGuards(AuthorizationGuard)
+  async getUserSubscription(): Promise<{
+    message: string;
+
+    data: SubscriptionDto;
+  }> {
+    try {
+      const data = await this.stripeService.getUserSubscription();
+      return {
+        message: "subscription cancelled successfully",
+        data,
       };
     } catch (error) {
       throw new HttpException(
