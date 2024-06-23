@@ -36,6 +36,7 @@ export class SubscriptionsService {
       throw error;
     }
   }
+
   async getUserSubscription(customer_id: string): Promise<any> {
     try {
       const subscription = await this.subscriptionModel
@@ -43,7 +44,18 @@ export class SubscriptionsService {
           customer_id,
         })
         .lean();
+
       return subscription;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteSubscription(subscription_id: string): Promise<void> {
+    try {
+      await this.subscriptionModel.deleteOne({
+        subscription_id,
+      });
     } catch (error) {
       throw error;
     }

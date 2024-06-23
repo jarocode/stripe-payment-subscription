@@ -74,14 +74,12 @@ export class StripeController {
     @Body() cancelSubscriptionDto: CancelSubscriptionDto
   ): Promise<{
     message: string;
-    sessionUrl: string;
   }> {
     const { subscription_id } = cancelSubscriptionDto;
     try {
       await this.stripeService.cancelSubscription(subscription_id);
       return {
         message: "subscription cancelled successfully",
-        sessionUrl: "/",
       };
     } catch (error) {
       throw new HttpException(
@@ -94,13 +92,12 @@ export class StripeController {
   // @UseGuards(AuthorizationGuard)
   async getUserSubscription(): Promise<{
     message: string;
-
     data: SubscriptionDto;
   }> {
     try {
       const data = await this.stripeService.getUserSubscription();
       return {
-        message: "subscription cancelled successfully",
+        message: "subscription retrieved successfully",
         data,
       };
     } catch (error) {

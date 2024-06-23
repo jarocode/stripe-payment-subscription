@@ -93,11 +93,13 @@ export class StripeService {
       let subscription =
         await this.subscriptionService.getUserSubscription(customer_id);
 
-      const { name } = await this.stripe.products.retrieve(
-        subscription.product_id
-      );
+      if (subscription) {
+        const { name } = await this.stripe.products.retrieve(
+          subscription.product_id
+        );
 
-      subscription.product_name = name;
+        subscription.product_name = name;
+      }
 
       return subscription;
     } catch (error) {
@@ -122,7 +124,8 @@ export class StripeService {
           case "customer.subscription.deleted":
             subscription = event.data.object;
             status = subscription.status;
-            // console.log(`Subscription status is ${status}.`);
+            console.log(`Subscription status is ${status}.`);
+            await this.subscriptionService.deleteSubscription(subscription.id);
 
             break;
           case "invoice.payment_succeeded":
