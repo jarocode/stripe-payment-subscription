@@ -58,6 +58,21 @@ export class StripeService {
         lookup_keys: [lookup_key],
         expand: ["data.product"],
       });
+
+      const product_id = JSON.parse(JSON.stringify(prices.data[0].product)).id;
+
+      console.log("product_id", product_id);
+
+      const subscriptionData =
+        await this.subscriptionService.findSubscriptionByProductID(product_id);
+
+      console.log("subscriptionData", subscriptionData);
+
+      if (subscriptionData)
+        throw new BadRequestException(
+          "you are already subscribed to this plan"
+        );
+
       const subscriptionList = await this.stripe.subscriptions.list({
         customer: "cus_QLAusbOPLnIVoF",
       });

@@ -50,6 +50,19 @@ export class SubscriptionsService {
       throw error;
     }
   }
+  async findSubscriptionByProductID(product_id: string): Promise<any> {
+    try {
+      const subscription = await this.subscriptionModel
+        .findOne({
+          product_id,
+        })
+        .lean();
+
+      return subscription;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async deleteSubscription(subscription_id: string): Promise<void> {
     try {
